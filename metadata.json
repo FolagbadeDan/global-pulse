@@ -1,0 +1,7 @@
+{
+  "name": "Global Pulse: Real-Time World Events",
+  "description": "An interactive global dashboard that visualizes real-time news, disasters, and positive stories across the world using Gemini-powered search grounding.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

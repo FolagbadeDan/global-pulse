@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Pulse</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    .leaflet-container {
+      background: transparent !important;
+    }
+
+    .custom-marker-pulse {
+      position: relative;
+    }
+
+    .custom-marker-pulse::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(2.5);
+        opacity: 0;
+      }
+    }
+
+    .positive-pulse::after {
+      border: 2px solid #10b981;
+    }
+
+    .negative-pulse::after {
+      border: 2px solid #ef4444;
+    }
+
+    .neutral-pulse::after {
+      border: 2px solid #3b82f6;
+    }
+
+    /* Atmosphere Wash */
+    .atmosphere-wash {
+      transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .day-wash {
+      background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+
+    .night-wash {
+      background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+
+
+</head>
+
+<body class="bg-gray-950 text-white overflow-hidden selection:bg-blue-500/30">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
