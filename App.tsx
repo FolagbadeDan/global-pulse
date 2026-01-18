@@ -57,17 +57,16 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      // Parallel Fetch
-      const [newsData, sentimentData, dashboardData, dayTension] = await Promise.all([
+      // 1. Primary Fetch: News & Gauge (Parallel)
+      // We need news to analyze sentiment, and tension to analyze market
+      const [newsData, dayTension] = await Promise.all([
         fetchGdeltNews(),
-        analyzeGlobalSentiment([]),
-        fetchMarketData(),
         getDailyGlobalTension()
       ]);
 
       let allNews = newsData;
 
-      // If location, fetch LOCAL BREAKING news instead of raw local
+      // 2. Local Breakdown (if available)
       if (userLocation) {
         try {
           const localBreaking = await fetchLocalBreakingNews(userLocation.lat, userLocation.lng);
@@ -79,17 +78,26 @@ const App: React.FC = () => {
         }
       }
 
+      // 3. Dependent Analysis: Sentiment (Requires News)
+      // Now we have the actual news to analyze
+      const sentimentData = await analyzeGlobalSentiment(allNews);
+
+      // 4. Dependent Analysis: Market (Requires Tension)
+      // Use the daily tension score to bias market data
+      const marketDashboard = await fetchMarketData(dayTension.score);
+
+      // 5. Update State
       setNews(allNews);
       setSidebarNews(allNews);
       setSentimentMetrics(sentimentData);
-      setMarketData(dashboardData);
+      setMarketData(marketDashboard);
       setTensionData(dayTension);
 
       // Cache
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         news: allNews,
         sentiment: sentimentData,
-        market: dashboardData,
+        market: marketDashboard,
         timestamp: Date.now()
       }));
 

@@ -4,7 +4,7 @@ import { NewsCategory } from '../types';
 import { Globe, Trophy, Landmark, DollarSign, Music, Cpu, Leaf, AlertTriangle } from 'lucide-react';
 
 interface CategoryBarProps {
-  activeCategory: NewsCategory;
+  activeCategory: NewsCategory | 'all';
   onCategoryChange: (cat: NewsCategory) => void;
 }
 
@@ -26,11 +26,10 @@ const CategoryBar: React.FC<CategoryBarProps> = ({ activeCategory, onCategoryCha
         <button
           key={cat.id}
           onClick={() => onCategoryChange(cat.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-            activeCategory === cat.id 
-              ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20' 
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all border ${activeCategory === cat.id
+              ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20'
               : 'bg-white/5 text-gray-400 border-transparent hover:bg-white/10'
-          }`}
+            }`}
         >
           <cat.icon className="w-3.5 h-3.5" />
           {cat.label}

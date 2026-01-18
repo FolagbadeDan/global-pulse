@@ -16,6 +16,7 @@ const NewsModal: React.FC<NewsModalProps> = ({ news, onClose, sources }) => {
     const [loadingReader, setLoadingReader] = useState(false);
     const [aiContent, setAiContent] = useState<string | null>(null);
     const [loadingAI, setLoadingAI] = useState(false);
+    const [imgError, setImgError] = useState(false);
 
     // Reset state when news changes
     useEffect(() => {
@@ -26,6 +27,7 @@ const NewsModal: React.FC<NewsModalProps> = ({ news, onClose, sources }) => {
         setAiContent(null);
         setLoadingReader(true);
         setLoadingAI(false);
+        setImgError(false); // Reset image error state
 
         let mounted = true;
 
@@ -124,8 +126,9 @@ const NewsModal: React.FC<NewsModalProps> = ({ news, onClose, sources }) => {
                 {/* Hero Image */}
                 <div className="relative h-64 sm:h-80 w-full shrink-0">
                     <img
-                        src={news.imageUrl || `https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=800`}
+                        src={imgError ? `https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=800` : (news.imageUrl || `https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=800`)}
                         alt={news.title}
+                        onError={() => setImgError(true)}
                         className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent" />
