@@ -1,24 +1,24 @@
-import posthog from 'posthog-js';
+import { clarity } from 'react-microsoft-clarity';
 
-const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
-const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com';
+const CLARITY_ID = import.meta.env.VITE_CLARITY_ID;
 
 export function initAnalytics() {
-    if (POSTHOG_KEY) {
-        posthog.init(POSTHOG_KEY, {
-            api_host: POSTHOG_HOST,
-            person_profiles: 'identified_only', // or 'always'
-            loaded: (ph) => {
-                console.log("PostHog Loaded:", ph.get_distinct_id());
-            }
-        });
+    if (CLARITY_ID) {
+        clarity.init(CLARITY_ID);
+        // Check if clarity has started is not directly sync available immediately usually, 
+        // but init starts the script injection.
+        console.log("Microsoft Clarity Initialized");
     } else {
-        console.warn("PostHog Analytics: Skipped (Key Missing)");
+        console.warn("Microsoft Clarity: Skipped (ID Missing). Set VITE_CLARITY_ID in .env");
     }
 }
 
 export function trackEvent(name: string, properties?: Record<string, any>) {
-    if (POSTHOG_KEY) {
-        posthog.capture(name, properties);
+    // Clarity is primarily for session replay. 
+    // We can use 'setTag' for high-level segmenting if needed, but for now we keep it simple.
+    if (CLARITY_ID) {
+        // Example: clarity.setTag("event", name);
+        // Or specific conversions if configured in Clarity dashboard.
     }
 }
+

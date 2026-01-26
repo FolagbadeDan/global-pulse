@@ -1,6 +1,7 @@
 
 import { fetchGlobalConflictNews } from './trendingService';
 import { generateText } from './sentimentEngine'; // Reusing the AI implementation
+import { parseAIJSON } from './aiUtils';
 
 const STORAGE_KEY_DATE = 'global_pulse_gauge_date';
 const STORAGE_KEY_DATA = 'global_pulse_gauge_data';
@@ -70,12 +71,15 @@ export async function getDailyGlobalTension(): Promise<TensionData> {
     { "score": <0-100 integer>, "rationale": "<1 sharp sentence identifying the specific driver (e.g. 'China drill upgrades')>" }
     `;
 
+    // ... (removed)
+
     try {
         const responseText = await generateText(prompt);
 
         // Parse JSON from AI response (sanitize markdown if needed)
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const aiResult = JSON.parse(cleanJson);
+        const aiResult = parseAIJSON<any>(responseText);
+
+        if (!aiResult) throw new Error("Failed to parse AI response");
 
         const score = Math.min(100, Math.max(0, aiResult.score || 50));
         const rationale = aiResult.rationale || "AI Analysis completed.";

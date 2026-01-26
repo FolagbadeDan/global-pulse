@@ -37,6 +37,7 @@ export interface GlobalSentimentMetrics {
   marketOutlook: 'bullish' | 'bearish' | 'volatile' | 'stable';
   summaryReport: string;
   trendingTopics: string[];
+  strategicInsight?: string; // One sentence strategic insight
   // WW3 Proximity Analysis
   ww3Score?: number;
   activeTheaters?: string[];

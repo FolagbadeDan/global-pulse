@@ -1,4 +1,5 @@
 import { NewsItem, GlobalSentimentMetrics } from "../types";
+import { parseAIJSON } from "./aiUtils";
 
 // Using OpenRouter for flexible model access (Free Tier for testing)
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
@@ -34,7 +35,8 @@ function calculateLocalSentiment(news: NewsItem[]): GlobalSentimentMetrics {
         defconLevel: tension > 80 ? 2 : tension > 60 ? 3 : 4,
         marketOutlook: tension > 70 ? 'bearish' : tension < 40 ? 'bullish' : 'volatile',
         summaryReport: `Global systems detect ${negRatio > 0.5 ? 'elevated' : 'moderate'} instability. Sector analysis complete.`,
-        trendingTopics: news.slice(0, 3).map(n => n.title.slice(0, 20) + "...")
+        trendingTopics: news.slice(0, 3).map(n => n.title.slice(0, 20) + "..."),
+        strategicInsight: "Systems reliance on heuristic data."
     };
 }
 
@@ -120,7 +122,7 @@ export async function generateText(prompt: string): Promise<string> {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "Authorization": "Bearer " + OPENROUTER_API_KEY,
             "Content-Type": "application/json",
             "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000",
             "X-Title": "Global Pulse"
@@ -133,7 +135,7 @@ export async function generateText(prompt: string): Promise<string> {
         })
     });
 
-    if (!response.ok) throw new Error(`OpenRouter API Error: ${response.status}`);
+    if (!response.ok) throw new Error("OpenRouter API Error: " + response.status);
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content || "";
@@ -156,7 +158,7 @@ export async function analyzeGlobalSentiment(news: NewsItem[]): Promise<GlobalSe
 
     try {
         // Prepare a digest for the AI
-        const headlines = news.slice(0, 30).map(n => `- ${n.title} (${n.category})`).join("\n");
+        const headlines = news.slice(0, 30).map(n => "- " + n.title + " (" + n.category + ")").join("\n");
 
         const prompt = `
       Analyze the following global news headlines as if you are a high-tech "Global Stability Engine".
@@ -184,16 +186,9 @@ export async function analyzeGlobalSentiment(news: NewsItem[]): Promise<GlobalSe
     `;
 
         const cleanContent = await generateText(prompt);
-        let jsonStr = cleanContent;
+        const result = parseAIJSON<GlobalSentimentMetrics>(cleanContent);
 
-        // Attempt to isolate JSON if AI chatted
-        const firstBrace = cleanContent.indexOf('{');
-        const lastBrace = cleanContent.lastIndexOf('}');
-        if (firstBrace !== -1 && lastBrace !== -1) {
-            jsonStr = cleanContent.substring(firstBrace, lastBrace + 1);
-        }
-
-        const result = JSON.parse(jsonStr) as GlobalSentimentMetrics;
+        if (!result) throw new Error("Failed to parse AI response");
 
         // Merge AI result with Deterministic WW3 stats
         return {
@@ -206,67 +201,5 @@ export async function analyzeGlobalSentiment(news: NewsItem[]): Promise<GlobalSe
     } catch (error) {
         console.warn("Sentiment Analysis Failed (OpenRouter). Switching to Local Heuristic.", error);
         return calculateLocalSentiment(news);
-    }
-}
-
-// BATCH ENRICHMENT: Takes top 20 news items and corrects their category/sentiment via AI
-export async function enrichNewsWithAI(news: NewsItem[]): Promise<NewsItem[]> {
-    if (!OPENROUTER_API_KEY || news.length === 0) return news;
-
-    try {
-        // Only take top 15 items to save tokens/time (focus on what user sees first)
-        const targetNews = news.slice(0, 15);
-        if (targetNews.length === 0) return news;
-
-        const digest = targetNews.map(n => `ID:${n.id}|TITLE:${n.title}|CURR_CAT:${n.category}`).join("\n");
-
-        const prompt = `
-      You are an Intelligence Analyst. Correct the categories for these news items.
-      Rules:
-      1. "Army/Military" doing "Medical/Aid/Rescue" is category "health" or "world", NOT "conflict".
-      2. "Conflict" is ONLY for active violence (fighting, missiles, attacks).
-      3. Return a JSON object mapping ID to new data.
-      
-      News Layout:
-      ${digest}
-
-      Output Format (JSON Only):
-      {
-        "corrections": [
-          { "id": "...", "category": "...", "sentiment": "positive"|"negative"|"neutral" }
-        ]
-      }
-    `;
-
-        // REUSE generic text generator here too, but we need JSON parsing
-        const cleanContent = await generateText(prompt);
-
-        let jsonStr = cleanContent;
-        const firstBrace = cleanContent.indexOf('{');
-        const lastBrace = cleanContent.lastIndexOf('}');
-        if (firstBrace === -1 || lastBrace === -1) return news;
-
-        jsonStr = cleanContent.substring(firstBrace, lastBrace + 1);
-        const result = JSON.parse(jsonStr);
-        const corrections = result.corrections || [];
-
-        // Apply corrections
-        const correctionMap = new Map(corrections.map((c: any) => [c.id, c]));
-
-        return news.map(item => {
-            const correction = correctionMap.get(item.id);
-            if (correction) {
-                return {
-                    ...item,
-                    category: correction.category || item.category,
-                    sentiment: correction.sentiment || item.sentiment
-                };
-            }
-            return item;
-        });
-
-    } catch (e) {
-        console.warn("AI Enrichment skipped:", e);
-        return news; // Fail gracefully, return original news
     }
 }

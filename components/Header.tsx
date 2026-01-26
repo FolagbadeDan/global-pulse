@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Globe, RefreshCw, MapPin, Clock, TrendingUp, TrendingDown, Activity, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { GlobalSentimentMetrics, MarketDashboard, MarketData } from '../types';
 import GradientText from './ui/GradientText';
@@ -68,6 +68,12 @@ const Header: React.FC<HeaderProps> = ({ onRefresh, isRefreshing, userLocation, 
       </div>
 
       <div className="flex items-center gap-6 overflow-hidden max-w-[400px]">
+        {/* Navigation Link for Articles */}
+        <Link to="/articles" className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
+          <span className="text-[10px] uppercase font-black tracking-widest">Archive</span>
+        </Link>
+        <div className="h-6 w-px bg-white/10 hidden md:block"></div>
+
         {/* Market Data Module - Now Scrolling */}
         {marketData && (
           <div className="flex items-center gap-8 animate-marquee-slow whitespace-nowrap">
